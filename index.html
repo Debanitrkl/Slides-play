@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building DevRel at Nexla — Debabrata Panigrahi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===========================================
+           THEME: Nexla Brand — Purple + Dark
+           Confident, technical, developer-focused
+           Colors extracted from nexla.com & express.dev
+           =========================================== */
+        :root {
+            --bg-primary: #1A1A2E;
+            --bg-secondary: #252531;
+            --bg-card: #2A2A3C;
+            --bg-card-hover: #32324A;
+            --text-primary: #F1F2F3;
+            --text-secondary: #D3D1EB;
+            --text-muted: #9F9DB2;
+            --accent: #6154FF;
+            --accent-dim: #453AC7;
+            --accent-glow: rgba(97, 84, 255, 0.15);
+            --accent-glow-strong: rgba(97, 84, 255, 0.3);
+            --accent-light: #A49CFF;
+            --warm: #FF6C47;
+            --warm-dim: rgba(255, 108, 71, 0.15);
+            --green: #21AE84;
+            --green-glow: rgba(33, 174, 132, 0.15);
+            --magenta: #B854DC;
+            --card-border: rgba(255,255,255,0.08);
+            --font-display: 'Rubik', sans-serif;
+            --font-body: 'Rubik', sans-serif;
+            --title-size: clamp(2rem, 5.5vw, 4.2rem);
+            --h2-size: clamp(1.4rem, 3.5vw, 2.4rem);
+            --h3-size: clamp(1rem, 2vw, 1.35rem);
+            --body-size: clamp(0.78rem, 1.3vw, 1.05rem);
+            --small-size: clamp(0.68rem, 1vw, 0.85rem);
+            --label-size: clamp(0.6rem, 0.85vw, 0.75rem);
+            --slide-padding: clamp(1.5rem, 5vw, 5rem);
+            --content-gap: clamp(0.75rem, 2vw, 2rem);
+            --element-gap: clamp(0.3rem, 1vw, 0.75rem);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --duration: 0.7s;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===========================================
+           SLIDE BASE — exact viewport height
+           =========================================== */
+        .slide {
+            width: 100vw;
+            min-height: 100vh;
+            min-height: 100dvh;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding: var(--slide-padding);
+            padding-bottom: clamp(1rem, 3vw, 2.5rem);
+        }
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            gap: clamp(0.3rem, 0.8vw, 0.6rem);
+        }
+
+        /* ===========================================
+           SECTION HEADER BAR
+           =========================================== */
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+            font-family: var(--font-body);
+            font-size: var(--label-size);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin-bottom: clamp(0.75rem, 1.5vw, 1.5rem);
+            opacity: 0.9;
+        }
+        .section-tag .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6em;
+            height: 1.6em;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-size: 1em;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: var(--title-size);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+        h2 {
+            font-family: var(--font-display);
+            font-size: var(--h2-size);
+            font-weight: 600;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            margin-bottom: clamp(0.5rem, 1.5vw, 1.5rem);
+        }
+        h3 {
+            font-family: var(--font-display);
+            font-size: var(--h3-size);
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        p, li {
+            font-size: var(--body-size);
+            line-height: 1.55;
+            color: var(--text-secondary);
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity var(--duration) var(--ease-out-expo),
+                        transform var(--duration) var(--ease-out-expo);
+        }
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .slide.visible .reveal:nth-child(1) { transition-delay: 0.05s; }
+        .slide.visible .reveal:nth-child(2) { transition-delay: 0.12s; }
+        .slide.visible .reveal:nth-child(3) { transition-delay: 0.19s; }
+        .slide.visible .reveal:nth-child(4) { transition-delay: 0.26s; }
+        .slide.visible .reveal:nth-child(5) { transition-delay: 0.33s; }
+        .slide.visible .reveal:nth-child(6) { transition-delay: 0.40s; }
+        .slide.visible .reveal:nth-child(7) { transition-delay: 0.47s; }
+
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity var(--duration) var(--ease-out-expo),
+                        transform var(--duration) var(--ease-spring);
+        }
+        .slide.visible .reveal-scale { opacity: 1; transform: scale(1); }
+
+        /* ===========================================
+           CARD SYSTEM
+           =========================================== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: clamp(0.8rem, 2vw, 1.5rem);
+            transition: background 0.3s, border-color 0.3s, transform 0.3s var(--ease-spring);
+        }
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(97,84,255,0.15);
+            transform: translateY(-2px);
+        }
+        .card-accent-top {
+            border-top: 2px solid var(--accent);
+        }
+        .card-accent-left {
+            border-left: 3px solid var(--accent);
+        }
+        .card-warm {
+            border-top: 2px solid var(--warm);
+        }
+
+        /* ===========================================
+           GRID LAYOUTS
+           =========================================== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(0.6rem, 1.5vw, 1.2rem);
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(0.6rem, 1.5vw, 1.2rem);
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(0.5rem, 1.2vw, 1rem);
+        }
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: clamp(0.4rem, 1vw, 0.8rem);
+        }
+
+        /* ===========================================
+           SPECIAL ELEMENTS
+           =========================================== */
+        .badge {
+            display: inline-block;
+            padding: 0.2em 0.7em;
+            border-radius: 999px;
+            font-size: var(--label-size);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .badge-accent { background: var(--accent-glow); color: var(--accent); }
+        .badge-warm { background: var(--warm-dim); color: var(--warm); }
+        .badge-muted { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+        .bullet-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--element-gap);
+        }
+        .bullet-list li {
+            padding-left: 1.2em;
+            position: relative;
+        }
+        .bullet-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.55em;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .stat-big {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: var(--small-size);
+            color: var(--text-muted);
+            margin-top: 0.25em;
+        }
+
+        .quote {
+            font-family: var(--font-display);
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 600;
+            color: var(--accent);
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        .field-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: baseline;
+            padding: clamp(0.3rem, 0.6vw, 0.5rem) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .field-label {
+            font-size: var(--small-size);
+            font-weight: 700;
+            color: var(--accent);
+            min-width: clamp(5rem, 10vw, 8rem);
+            flex-shrink: 0;
+        }
+        .field-value {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+        }
+
+        /* Workflow row */
+        .wf-row {
+            display: grid;
+            grid-template-columns: 2fr 4fr 2fr;
+            gap: 0.75rem;
+            align-items: center;
+            padding: clamp(0.4rem, 0.8vw, 0.65rem) clamp(0.5rem, 1vw, 0.8rem);
+            border-left: 3px solid var(--accent);
+            background: var(--bg-card);
+            border-radius: 0 8px 8px 0;
+        }
+        .wf-name {
+            font-size: var(--small-size);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .wf-desc {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+        }
+        .wf-tools {
+            font-size: var(--label-size);
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        /* Phase columns */
+        .phase-card {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .phase-header {
+            padding: clamp(0.5rem, 1.2vw, 1rem) clamp(0.6rem, 1.5vw, 1.2rem);
+            background: var(--accent);
+            color: var(--bg-primary);
+            text-align: center;
+        }
+        .phase-header h3 {
+            color: var(--bg-primary);
+            font-size: var(--h3-size);
+        }
+        .phase-header .sub {
+            font-size: var(--label-size);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            opacity: 0.8;
+            margin-top: 0.15em;
+        }
+        .phase-body {
+            padding: clamp(0.6rem, 1.2vw, 1rem);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.4rem, 0.8vw, 0.7rem);
+            flex: 1;
+        }
+        .phase-label {
+            font-size: var(--label-size);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+        .phase-text {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        /* ===========================================
+           DECORATIVE BACKGROUNDS
+           =========================================== */
+        .bg-mesh::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 85%, rgba(97,84,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 15%, rgba(184,84,220,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-grid::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .accent-line-left {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            z-index: 3;
+        }
+
+        /* ===========================================
+           PIPELINE MODAL OVERLAY
+           =========================================== */
+        .pipeline-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 15, 25, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .pipeline-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .pipeline-modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            width: min(92vw, 900px);
+            max-height: 85vh;
+            overflow: hidden;
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.4s var(--ease-spring);
+            display: flex;
+            flex-direction: column;
+        }
+        .pipeline-overlay.active .pipeline-modal {
+            transform: scale(1) translateY(0);
+        }
+        .pipeline-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: clamp(0.8rem, 2vw, 1.5rem) clamp(1rem, 2.5vw, 2rem);
+            border-bottom: 1px solid var(--card-border);
+        }
+        .pipeline-modal-header h3 {
+            font-size: var(--h3-size);
+            color: var(--text-primary);
+        }
+        .pipeline-modal-close {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .pipeline-modal-close:hover {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-primary);
+        }
+        .pipeline-modal-body {
+            padding: clamp(1rem, 2.5vw, 2rem);
+            overflow-y: auto;
+            flex: 1;
+        }
+        .pipeline-svg-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .pipeline-svg-container svg {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+        }
+        .pipeline-desc {
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+        }
+        .pipeline-desc strong {
+            color: var(--text-primary);
+        }
+        .pipeline-tech-stack {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .pipeline-tech-tag {
+            padding: 0.25em 0.7em;
+            border-radius: 6px;
+            font-size: var(--label-size);
+            font-weight: 600;
+            background: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid rgba(97,84,255,0.15);
+        }
+
+        /* Clickable workflow cards */
+        .wf-row-clickable {
+            display: grid;
+            grid-template-columns: 2fr 4fr 2fr;
+            gap: 0.75rem;
+            align-items: center;
+            padding: clamp(0.5rem, 0.9vw, 0.75rem) clamp(0.6rem, 1.2vw, 1rem);
+            border-left: 3px solid var(--accent);
+            background: var(--bg-card);
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: all 0.25s var(--ease-out-expo);
+            position: relative;
+        }
+        .wf-row-clickable:hover {
+            background: var(--bg-card-hover);
+            border-left-color: var(--accent);
+            transform: translateX(4px);
+        }
+        .wf-row-clickable::after {
+            content: 'Click to view pipeline →';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: var(--label-size);
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .wf-row-clickable:hover::after {
+            opacity: 0.7;
+        }
+        .wf-row-clickable:hover .wf-tools {
+            opacity: 0;
+        }
+
+        @media (max-width: 900px) {
+            .wf-row-clickable { grid-template-columns: 1fr; gap: 0.25rem; }
+            .wf-row-clickable::after { display: none; }
+            .wf-row-clickable:hover .wf-tools { opacity: 1; }
+        }
+
+        /* ===========================================
+           PROGRESS BAR
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            z-index: 1000;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-glow-strong);
+        }
+
+        /* ===========================================
+           NAV DOTS
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: clamp(0.5rem, 1.5vw, 1.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 0;
+        }
+        .nav-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow-strong);
+            transform: scale(1.3);
+        }
+
+        /* ===========================================
+           SLIDE COUNTER
+           =========================================== */
+        .slide-counter {
+            position: fixed;
+            bottom: clamp(0.5rem, 1.5vw, 1.5rem);
+            right: clamp(0.5rem, 1.5vw, 1.5rem);
+            font-size: var(--label-size);
+            color: var(--text-muted);
+            z-index: 100;
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+
+        /* ===========================================
+           TABLE
+           =========================================== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--small-size);
+        }
+        .data-table th {
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 700;
+            padding: clamp(0.3rem, 0.7vw, 0.5rem) clamp(0.4rem, 0.8vw, 0.7rem);
+            text-align: left;
+            font-size: var(--label-size);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .data-table td {
+            padding: clamp(0.25rem, 0.6vw, 0.45rem) clamp(0.4rem, 0.8vw, 0.7rem);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+        }
+        .data-table tr:hover td {
+            background: rgba(97,84,255,0.03);
+        }
+
+        /* ===========================================
+           RESPONSIVE
+           =========================================== */
+        @media (max-width: 900px) {
+            .grid-3 { grid-template-columns: 1fr 1fr; }
+            .grid-4 { grid-template-columns: 1fr 1fr; }
+            .grid-5 { grid-template-columns: 1fr 1fr 1fr; }
+            .wf-row { grid-template-columns: 1fr; gap: 0.25rem; }
+            .wf-tools { text-align: left; }
+        }
+        @media (max-width: 600px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+        @media (max-height: 800px) {
+            :root {
+                --slide-padding: clamp(1rem, 2.5vw, 2rem);
+                --content-gap: clamp(0.3rem, 0.8vw, 0.6rem);
+                --element-gap: clamp(0.2rem, 0.6vw, 0.4rem);
+                --h2-size: clamp(1.2rem, 3vw, 1.8rem);
+                --h3-size: clamp(0.85rem, 1.6vw, 1.1rem);
+                --body-size: clamp(0.72rem, 1.1vw, 0.9rem);
+                --small-size: clamp(0.62rem, 0.9vw, 0.78rem);
+            }
+            .section-tag { margin-bottom: clamp(0.4rem, 0.8vw, 0.7rem); }
+            h2 { margin-bottom: clamp(0.3rem, 0.8vw, 0.7rem); }
+            .card { padding: clamp(0.5rem, 1.2vw, 0.9rem); }
+            .bullet-list { gap: clamp(0.15rem, 0.4vw, 0.3rem); }
+            .grid-2, .grid-3, .grid-4, .grid-5 { gap: clamp(0.4rem, 1vw, 0.8rem); }
+        }
+        @media (max-height: 650px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 2vw, 1.5rem);
+                --title-size: clamp(1.5rem, 4.5vw, 2.5rem);
+                --h2-size: clamp(1rem, 2.5vw, 1.5rem);
+                --h3-size: clamp(0.8rem, 1.4vw, 1rem);
+                --body-size: clamp(0.68rem, 1vw, 0.82rem);
+                --small-size: clamp(0.58rem, 0.85vw, 0.72rem);
+                --label-size: clamp(0.54rem, 0.75vw, 0.65rem);
+            }
+            .nav-dots, .slide-counter { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.15s !important;
+            }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter" id="slideCounter"></div>
+
+<!-- ====================================================
+     SLIDE 1: TITLE
+     ==================================================== -->
+<section class="slide bg-mesh" id="slide-1">
+    <div class="accent-line-left"></div>
+    <div class="slide-content" style="gap: var(--content-gap);">
+        <h1 class="reveal">Building DevRel<br>at Nexla</h1>
+        <p class="quote reveal" style="max-width: 42em;">"DevRel is enablement — making internal engineers proud advocates and external developers successful before they ever talk to sales."</p>
+        <div class="reveal" style="margin-top: clamp(0.75rem, 1.5vw, 1.5rem);">
+            <p style="font-size: var(--h3-size); font-weight: 700; color: var(--text-primary);">Debabrata Panigrahi</p>
+            <p style="color: var(--text-muted); font-size: var(--body-size);">Developer Relations Manager Candidate</p>
+            <p style="color: var(--text-muted); font-size: var(--small-size);">Led DevRel at Harness (IDP Module) &middot; Founding Engineer @ Parseable (OSS unified observability)</p>
+        </div>
+        <div class="reveal" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem;">
+            <span class="badge badge-accent">Enabler for Internal Eng</span>
+            <span class="badge badge-accent">Enabler for External ICPs</span>
+            <span class="badge badge-warm">Developer First</span>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 2: Understanding Nexla & Express.Dev
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-2">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">1</span> Know the Company</div>
+        <h2 class="reveal">Nexla & Express.Dev — What They Solve</h2>
+        <div class="grid-2 reveal-scale" style="transition-delay: 0.15s;">
+            <div class="card card-accent-top">
+                <h3 style="margin-bottom: 0.5em;">Nexla Platform</h3>
+                <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5em; font-size: var(--small-size);">The problem: data integration is still the #1 bottleneck for AI adoption</p>
+                <ul class="bullet-list">
+                    <li><strong>500+ bidirectional connectors</strong> — Snowflake, S3, Salesforce, Postgres, Kafka, unstructured docs. Adaptive engine means no custom connector dev.</li>
+                    <li><strong>Nexsets</strong> — vendor-independent data products with schema, validation rules, audit logs, and RBAC. The abstraction that makes data reusable across teams.</li>
+                    <li><strong>Native MCP server</strong> — Nexsets exposed as MCP resources so AI agents can discover and query data sources. This is the agent-native differentiator.</li>
+                    <li><strong>All integration styles in one platform</strong> — ETL, ELT, CDC, streaming, reverse ETL, API proxy, and agentic RAG pipelines.</li>
+                    <li>SOC 2 Type II, HIPAA, GDPR, CCPA compliant. 1T+ records/month for DoorDash, LinkedIn, J&J, LiveRamp.</li>
+                </ul>
+            </div>
+            <div class="card card-warm">
+                <h3 style="margin-bottom: 0.5em;">Express.Dev</h3>
+                <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5em; font-size: var(--small-size);">The on-ramp: "Connect Salesforce to Snowflake, sync daily" → pipeline in 3 min</p>
+                <ul class="bullet-list">
+                    <li><strong>NOVA</strong> (Nexla Orchestrated Versatile Agents) — LLM generates Python/SQL tasks, auto-discovers sources, handles transforms. Switch between chat, no-code, and pro-code.</li>
+                    <li><strong>Free tier: $0, 100 credits/month, 5 pipelines.</strong> Pro: $50/mo, 1000 credits, 100 pipelines. Low barrier → high DevRel leverage.</li>
+                    <li><strong>The "aha moment" product.</strong> Express.Dev is where DevRel content starts — every tutorial, hackathon, and demo should begin with a prompt.</li>
+                    <li><strong>ExpressYourself Challenge</strong> already running — community-building potential I would amplify with content and social coverage.</li>
+                    <li><strong>I tested it myself:</strong> Built an S3 → PostgreSQL migration pipeline (NOVA auto-detected schema, generated transforms, configured UPSERT mode) and a REST API → Snowflake pipeline with nested JSON flattening + null filtering — all via prompts.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 3: Audience Personas
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-3">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">1</span> Who Benefits — In the Age of Agents</div>
+        <h2 class="reveal">Three ICPs, One Common Pain: Getting Data Agent-Ready</h2>
+        <div class="grid-3 reveal-scale" style="transition-delay: 0.15s;">
+            <div class="card card-accent-top">
+                <h3 style="margin-bottom: 0.4em;">Data Engineers</h3>
+                <p style="margin-bottom: 0.6em;"><strong>Pain:</strong> Fivetran's MAR pricing spikes, Airbyte's self-hosted maintenance. Need one platform for ETL + ELT + CDC + streaming without 4 separate tools.</p>
+                <p style="margin-bottom: 0.3em;"><strong style="color: var(--accent); font-size: var(--small-size);">Nexla hook:</strong> <span style="font-size: var(--small-size);">500+ connectors, Nexsets for reusable data products, Express.Dev for rapid prototyping.</span></p>
+                <p style="font-size: var(--label-size); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em;">Where they are</p>
+                <p style="font-size: var(--small-size); color: var(--text-muted);">dbt Slack (40K+), r/dataengineering (200K+), Data Council, local meetups</p>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--warm);">
+                <h3 style="margin-bottom: 0.4em;">AI/Agent Builders</h3>
+                <p style="margin-bottom: 0.6em;"><strong>Pain:</strong> RAG accuracy breaks without clean, governed data. Most spend 80% of time on data prep, not agent logic. Need retrieval across 50+ sources, not just a vector DB.</p>
+                <p style="margin-bottom: 0.3em;"><strong style="color: var(--warm); font-size: var(--small-size);">Nexla hook:</strong> <span style="font-size: var(--small-size);">MCP-native Nexsets, agentic retrieval across sources, agentic chunking (open-sourced).</span></p>
+                <p style="font-size: var(--label-size); font-weight: 700; color: var(--warm); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em;">Where they are</p>
+                <p style="font-size: var(--small-size); color: var(--text-muted);">Hacker News, AI/ML Discords, MLOps Community, LangChain/LlamaIndex ecosystems</p>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--green);">
+                <h3 style="margin-bottom: 0.4em;">Platform Teams</h3>
+                <p style="margin-bottom: 0.6em;"><strong>Pain:</strong> Internal teams want self-service data access but need governance guardrails. Can't give raw DB creds to every team; need a data product layer.</p>
+                <p style="margin-bottom: 0.3em;"><strong style="color: var(--green); font-size: var(--small-size);">Nexla hook:</strong> <span style="font-size: var(--small-size);">Nexsets as governed data products, marketplace for internal sharing, RBAC + audit trails.</span></p>
+                <p style="font-size: var(--label-size); font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3em;">Where they are</p>
+                <p style="font-size: var(--small-size); color: var(--text-muted);">Platform Eng Slack, KubeCon, internal tooling blogs, Backstage community</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 4: Content Priority Stack
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-4">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">2</span> Content Strategy</div>
+        <h2 class="reveal">First 90 Days: Content Priorities & Why</h2>
+        <div class="grid-4 reveal-scale" style="transition-delay: 0.15s;">
+            <div class="card" style="border-top: 3px solid var(--accent);">
+                <span class="badge badge-accent" style="margin-bottom: 0.5em;">P0 — Week 1-2</span>
+                <h3 style="margin-bottom: 0.4em;">Express.Dev Quick-Starts</h3>
+                <p style="font-size: var(--small-size);"><strong>Why first:</strong> Express.Dev free tier (100 credits, 5 pipelines) is the lowest-friction entry point. If a developer can't go from signup → first pipeline in &lt;10 min, they churn. <strong>I already tested this:</strong> "Move data from S3 to PostgreSQL" → NOVA loaded connectors, auto-detected schema, configured UPSERT with primary key — all from a single prompt. This becomes the first quick-start tutorial.</p>
+            </div>
+            <div class="card" style="border-top: 3px solid #453AC7;">
+                <span class="badge badge-accent" style="margin-bottom: 0.5em;">P1 — Week 2-4</span>
+                <h3 style="margin-bottom: 0.4em;">How-To Videos (3-5 min)</h3>
+                <p style="font-size: var(--small-size);"><strong>Why:</strong> Express.Dev is visual — prompts → pipeline is a natural screen recording format. YouTube discovery + embedded in docs.nexla.com. <strong>Specific:</strong> "Build a RAG pipeline with Express.Dev", "NOVA: chat → no-code → pro-code".</p>
+            </div>
+            <div class="card" style="border-top: 3px solid #21AE84;">
+                <span class="badge badge-accent" style="margin-bottom: 0.5em;">P2 — Week 4-8</span>
+                <h3 style="margin-bottom: 0.4em;">Top Connector Guides</h3>
+                <p style="font-size: var(--small-size);"><strong>Why:</strong> Developers search "connect [X] to [Y]" — SEO goldmine. <strong>Specific:</strong> Top 10 connectors by usage (Snowflake, S3, Salesforce, Postgres, Kafka, BigQuery) get dedicated tutorials with real schemas, not toy data.</p>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--text-muted);">
+                <span class="badge badge-muted" style="margin-bottom: 0.5em;">P3 — Week 8-12</span>
+                <h3 style="margin-bottom: 0.4em;">Comparison & Thought Leadership</h3>
+                <p style="font-size: var(--small-size);"><strong>Why:</strong> Developers compare before committing. <strong>Specific:</strong> "Nexla vs Fivetran: why 500+ connectors + reverse ETL matters", "Why MCP-native data products beat custom RAG pipelines". Build on Nexla's existing blog tone (Nexla already published the Fivetran-dbt merger analysis).</p>
+            </div>
+        </div>
+        <p class="reveal" style="margin-top: var(--content-gap); font-style: italic; color: var(--text-muted); font-size: var(--small-size); max-width: 55em;"><strong>Trade-off reasoning:</strong> I'd defer thought leadership to P3 because brand content doesn't convert without a working quick-start path. At Harness IDP, we saw 3x more signups from tutorials than from blog posts.</p>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 5: Spotlight Content Piece
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-5">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">2</span> Content Deep Dive</div>
+        <h2 class="reveal">One Content Piece — Full Detail (Section 2B)</h2>
+        <div class="card card-accent-left reveal-scale" style="transition-delay: 0.15s; max-width: 58em;">
+            <h3 style="margin-bottom: clamp(0.5rem, 1vw, 1rem); font-size: var(--h3-size);">"From PDF to Agent-Ready: Build a RAG Data Pipeline in 10 Minutes with Express.Dev"</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                <div class="field-row"><span class="field-label">Format</span><span class="field-value">5-min video walkthrough + companion blog post + GitHub repo with sample prompts</span></div>
+                <div class="field-row"><span class="field-label">Audience</span><span class="field-value">AI/agent builders evaluating data pipeline tools. They've hit the wall where their RAG accuracy breaks because data comes from 5+ sources and formats.</span></div>
+                <div class="field-row"><span class="field-label">Core Message</span><span class="field-value">Express.Dev + agentic retrieval: prompt "Pull product docs from S3, customer tickets from Zendesk, enrich with Salesforce account data, create a Nexset" → agent-ready data product in minutes, not weeks.</span></div>
+                <div class="field-row"><span class="field-label">Distribution</span><span class="field-value">YouTube (SEO: "RAG data pipeline tutorial"), dev.to cross-post, r/dataengineering + r/LocalLLaMA, Hacker News Show HN, Nexla blog, X thread</span></div>
+                <div class="field-row"><span class="field-label">Metrics</span><span class="field-value">5K video views in 30 days (benchmark from similar Airbyte content), Express.Dev signups from UTM links, GitHub repo stars, and <strong>time-to-first-pipeline</strong> for users who came via this content</span></div>
+                <div class="field-row"><span class="field-label">Why This First</span><span class="field-value">RAG is the #1 AI use case right now. Nexla's agentic retrieval + agentic chunking (which they open-sourced) is a genuine differentiator over "just connect to a vector DB". This positions Nexla at the center of the AI agent wave, not just as an ETL tool.</span></div>
+                <div class="field-row" style="border-bottom: none;"><span class="field-label">Proof of Concept</span><span class="field-value"><strong>I built a version of this:</strong> On Express.Dev, I created a REST API → Snowflake pipeline with NOVA handling nested JSON flattening (user.address.city → user_address_city) and null filtering via auto-generated Python transforms — all from a natural language prompt. This is exactly the tutorial flow I'd record.</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 6: Repeatable Content Engine
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-6">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">2</span> Content Engine</div>
+        <h2 class="reveal">Repeatable, Scalable Content Process</h2>
+        <div class="grid-4 reveal-scale" style="transition-delay: 0.1s; margin-bottom: var(--content-gap);">
+            <div style="text-align: center;">
+                <div style="width: 2.2em; height: 2.2em; border-radius: 50%; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: var(--h3-size); color: var(--bg-primary); margin-bottom: 0.4em;">1</div>
+                <h3 style="margin-bottom: 0.3em;">Source</h3>
+                <p style="font-size: var(--small-size);">Changelog, support tickets, community Qs, roadmap &rarr; content backlog</p>
+            </div>
+            <div style="text-align: center;">
+                <div style="width: 2.2em; height: 2.2em; border-radius: 50%; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: var(--h3-size); color: var(--bg-primary); margin-bottom: 0.4em;">2</div>
+                <h3 style="margin-bottom: 0.3em;">Draft</h3>
+                <p style="font-size: var(--small-size);">AI-assisted first draft. DevRel adds voice, code examples, screenshots</p>
+            </div>
+            <div style="text-align: center;">
+                <div style="width: 2.2em; height: 2.2em; border-radius: 50%; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: var(--h3-size); color: var(--bg-primary); margin-bottom: 0.4em;">3</div>
+                <h3 style="margin-bottom: 0.3em;">Review</h3>
+                <p style="font-size: var(--small-size);">Engineering review for accuracy. Product review for messaging alignment</p>
+            </div>
+            <div style="text-align: center;">
+                <div style="width: 2.2em; height: 2.2em; border-radius: 50%; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: var(--h3-size); color: var(--bg-primary); margin-bottom: 0.4em;">4</div>
+                <h3 style="margin-bottom: 0.3em;">Publish</h3>
+                <p style="font-size: var(--small-size);">Multi-channel distribution. Track metrics. Feed learnings back to Step 1</p>
+            </div>
+        </div>
+        <div class="card reveal" style="transition-delay: 0.25s;">
+            <h3 style="margin-bottom: 0.4em; font-size: var(--body-size);">Cadence & Quality Controls</h3>
+            <ul class="bullet-list">
+                <li>Bi-weekly publish cycle — 2 pieces/month minimum (blog + video alternating)</li>
+                <li>Every piece gets an engineering reviewer before publish <span style="color: var(--text-muted);">(learned at Harness — accuracy builds trust)</span></li>
+                <li>Quarterly content audit: retire stale docs, refresh screenshots, update code</li>
+                <li>Community-sourced: top 5 support questions become next month's tutorials</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 7: Community Strategy
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-7">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">3</span> Community</div>
+        <h2 class="reveal">Community Strategy — Year 1</h2>
+        <div class="grid-2 reveal-scale" style="transition-delay: 0.1s; margin-bottom: var(--content-gap);">
+            <div class="card card-accent-top">
+                <h3 style="margin-bottom: 0.5em;">Owned Community — Build on Existing Slack</h3>
+                <ul class="bullet-list">
+                    <li><strong>Nexla already has Community Slack</strong> (via docs.nexla.com/support). Don't start from scratch — activate it. Add structured channels: #express-dev-help, #show-your-pipeline, #connectors, #feature-requests.</li>
+                    <li><strong>Seed with internal engineers.</strong> Nexla eng team should be answering questions there. I'd coordinate weekly "office hours" in Slack with a rotating engineer.</li>
+                    <li><strong>Express.Dev community page currently redirects to homepage</strong> — that's a quick win: build a dedicated community landing with Slack invite, GitHub links, and ExpressYourself Challenge showcase.</li>
+                    <li><strong>"Pipeline of the Week"</strong> — feature community-built pipelines. This scales content and builds pride.</li>
+                </ul>
+            </div>
+            <div class="card card-warm">
+                <h3 style="margin-bottom: 0.5em;">Third-Party Presence — Where Nexla's ICPs Already Are</h3>
+                <ul class="bullet-list">
+                    <li><strong>r/dataengineering (200K+ members)</strong> — answer "how do I connect X to Y" questions with Express.Dev examples. Don't spam; earn trust.</li>
+                    <li><strong>dbt Community Slack (40K+)</strong> — participate in data integration threads. Nexla's "all styles in one platform" is directly relevant when people ask about ELT limitations.</li>
+                    <li><strong>Hacker News</strong> — "Show HN: Express.Dev" posts for major features. Nexla's agentic chunking open-source release would be a strong Show HN candidate.</li>
+                    <li><strong>LangChain/LlamaIndex Discords</strong> — the AI agent builder community needs data integration content. MCP-native Nexsets is a story they want to hear.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="card reveal" style="background: var(--accent-glow); border: 1px solid rgba(97,84,255,0.2); transition-delay: 0.25s;">
+            <p style="font-size: var(--small-size); color: var(--accent);">
+                <strong>Enabler lens — inside out:</strong> At Parseable, I grew our GitHub stars from 0 → 2K by showing up in OpenTelemetry and observability forums with real technical answers — not marketing. At Harness, I helped internal IDP engineers become conference speakers and blog authors. I'd do both at Nexla: make engineers visible externally while earning trust in developer communities.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 8: Events + Community ROI
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-8">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">3</span> Events</div>
+        <h2 class="reveal">Events & Measuring Community Health</h2>
+        <div class="reveal-scale" style="transition-delay: 0.1s; margin-bottom: var(--content-gap); overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Event Type</th><th>Why</th><th>What We Do</th><th>Frequency</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td style="font-weight:600; color: var(--text-primary);">Express.Dev Hackathons</td><td>Free tier = zero cost for participants. Builds pipeline muscle memory. Winners become advocates.</td><td>"Build a pipeline in 30 min" challenge using Express.Dev free tier. Record submissions for content.</td><td>Quarterly (virtual first, in-person when community matures)</td></tr>
+                    <tr><td style="font-weight:600; color: var(--text-primary);">Data Council / AI Eng Summit</td><td>These are where Nexla's exact ICPs gather. Speaking slots > sponsored booths at this stage.</td><td>Talk: "MCP-Native Data Products for AI Agents" + live Express.Dev demo at booth. Post-event blog.</td><td>2-3/year</td></tr>
+                    <tr><td style="font-weight:600; color: var(--text-primary);">Virtual Office Hours</td><td>Direct feedback loop from users. Community Slack already exists — add a live layer.</td><td>Rotating Nexla engineer answers live questions. I'd host and capture insights for Voice of Developer.</td><td>Bi-weekly</td></tr>
+                    <tr><td style="font-weight:600; color: var(--text-primary);">ExpressYourself Challenge</td><td>Already running — amplify it. User-generated pipelines = free content + community pride.</td><td>Showcase winners on blog, feature in community Slack, offer Pro tier credits as prizes.</td><td>Ongoing (monthly cohorts)</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reveal" style="transition-delay: 0.25s;">
+            <h3 style="margin-bottom: 0.4em; font-size: var(--body-size);">Measuring Community Health & Event ROI (3C) — How I'd Report to Leadership</h3>
+            <ul class="bullet-list">
+                <li><strong>Slack activity ratio:</strong> Messages from community members ÷ messages from staff. Target: 3:1 by Month 6. If staff answers everything, community isn't self-sustaining.</li>
+                <li><strong>Event → Express.Dev conversion:</strong> UTM-tracked signup links at every event. Target: 15% of hackathon attendees create their first pipeline within 7 days.</li>
+                <li><strong>Content attribution:</strong> Track which tutorials drive Express.Dev signups. Monthly report: top 5 content pieces by conversion, not just views.</li>
+                <li><strong>Monthly "Community Health" report to leadership:</strong> 1-page dashboard — Slack growth, event attendance, content pipeline status, top developer feedback themes. Format: G/Y/R status + 3 bullet insights.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 9: Eng & Product Loop
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-9">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">4</span> Feedback Loop</div>
+        <h2 class="reveal">Engineering & Product Feedback Loop</h2>
+        <div class="grid-2 reveal-scale" style="transition-delay: 0.1s; margin-bottom: var(--content-gap);">
+            <div class="card card-accent-left">
+                <h3 style="color: var(--accent); margin-bottom: 0.4em; font-size: var(--body-size);">Eng &rarr; DevRel &rarr; Users (4A)</h3>
+                <ul class="bullet-list">
+                    <li><strong>Cadence:</strong> Attend every sprint demo. Subscribe to GitHub release tags + Express.Dev changelog.</li>
+                    <li><strong>Prioritize by developer impact:</strong> New connector? → tutorial. NOVA improvement? → video. API change? → migration guide. Not everything gets a blog post — I'd triage by ICP relevance.</li>
+                    <li><strong>Format:</strong> "What's New" blog within 48 hrs of major releases. Shared Notion board: upcoming releases → content pipeline.</li>
+                    <li><strong>Enabler role internally:</strong> Help engineers write their own blog posts and present at conferences. At Harness, I coached 4 engineers into conference speakers — they became our most credible voices.</li>
+                </ul>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--warm);">
+                <h3 style="color: var(--warm); margin-bottom: 0.4em; font-size: var(--body-size);">Users &rarr; DevRel &rarr; Product (4B)</h3>
+                <ul class="bullet-list">
+                    <li><strong>Weekly:</strong> Pain-point digest tagged by source (docs drop-off, Community Slack, support tickets, Express.Dev failed prompts).</li>
+                    <li><strong>Monthly:</strong> "Voice of Developer" report: ranked pain points with signal strength + suggested actions. Shared in a PM Slack channel.</li>
+                    <li><strong>Quarterly:</strong> Formal roadmap input session with PM. Present top 5 insights with data, not opinions.</li>
+                    <li><strong>Real example (4D):</strong> At Harness, I surfaced that 60% of IDP onboarding drop-offs happened at the "connect your Git provider" step. Brought this to PM with session recordings + community threads. Result: team shipped a guided setup wizard that cut drop-off by 40%. <em>This is how field insights become shipped features.</em></li>
+                </ul>
+            </div>
+        </div>
+        <h3 class="reveal" style="font-size: var(--body-size); margin-bottom: 0.4em; transition-delay: 0.2s;">Signals I Track to Find Developer Friction (4C)</h3>
+        <div class="grid-5 reveal" style="transition-delay: 0.3s;">
+            <div class="card" style="text-align:center; padding: clamp(0.4rem,1vw,0.7rem);"><p style="font-weight:700; color: var(--accent); font-size: var(--small-size);">Doc drop-off</p><p style="font-size: var(--label-size); color: var(--text-muted);">Which docs.nexla.com pages have high exit rates</p></div>
+            <div class="card" style="text-align:center; padding: clamp(0.4rem,1vw,0.7rem);"><p style="font-weight:700; color: var(--accent); font-size: var(--small-size);">Support themes</p><p style="font-size: var(--label-size); color: var(--text-muted);">Top 5 recurring ticket categories in Slack</p></div>
+            <div class="card" style="text-align:center; padding: clamp(0.4rem,1vw,0.7rem);"><p style="font-weight:700; color: var(--accent); font-size: var(--small-size);">Express.Dev prompts</p><p style="font-size: var(--label-size); color: var(--text-muted);">Which prompts fail or confuse NOVA</p></div>
+            <div class="card" style="text-align:center; padding: clamp(0.4rem,1vw,0.7rem);"><p style="font-weight:700; color: var(--accent); font-size: var(--small-size);">Connector gaps</p><p style="font-size: var(--label-size); color: var(--text-muted);">Most-requested missing connectors</p></div>
+            <div class="card" style="text-align:center; padding: clamp(0.4rem,1vw,0.7rem);"><p style="font-weight:700; color: var(--accent); font-size: var(--small-size);">Time to 1st pipeline</p><p style="font-size: var(--label-size); color: var(--text-muted);">Key Express.Dev onboarding metric</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 10: AI-First Toolkit
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-10">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">5</span> AI-First Mindset</div>
+        <h2 class="reveal">AI Tools I Actually Use Today (5A)</h2>
+        <div style="display: flex; flex-direction: column; gap: clamp(0.4rem, 0.8vw, 0.6rem);">
+            <div class="card reveal" style="display: grid; grid-template-columns: auto 1fr; gap: 1em; align-items: center; transition-delay: 0.1s;">
+                <span style="font-size: 1.5em;">&#9997;&#65039;</span>
+                <div><h3 style="font-size: var(--body-size);">SEO-Driven Content Pipeline (My Daily Workflow)</h3><p style="font-size: var(--small-size);"><strong>Step 1:</strong> Run competitor analysis via Claude's competitive-brief plugin — analyze their SEO blogs, extract target keywords, identify content gaps. <strong>Step 2:</strong> Feed the analysis into Claude Code to batch-generate 10 blog posts with prompts derived from the competitor gaps. <strong>Step 3:</strong> Run each draft through Claude Skills to strip AI slop, enforce factual accuracy, and match my writing voice. Result: a full content calendar in hours, not weeks. <strong>Kite Studio</strong> for video editing. This deck was built with Claude + HTML.</p></div>
+            </div>
+            <div class="card reveal" style="display: grid; grid-template-columns: auto 1fr; gap: 1em; align-items: center; transition-delay: 0.17s;">
+                <span style="font-size: 1.5em;">&#128269;</span>
+                <div><h3 style="font-size: var(--body-size);">Research & Product Analytics</h3><p style="font-size: var(--small-size);"><strong>Claude's competitive-brief plugin</strong> feeds the content pipeline above — I generate battlecards for Fivetran, Airbyte on demand. <strong>PostHog</strong> for product analytics — I built automations that surface developer behavior patterns weekly. At Nexla, I'd track Express.Dev funnel drop-offs and connector usage trends.</p></div>
+            </div>
+            <div class="card reveal" style="display: grid; grid-template-columns: auto 1fr; gap: 1em; align-items: center; transition-delay: 0.24s;">
+                <span style="font-size: 1.5em;">&#128187;</span>
+                <div><h3 style="font-size: var(--body-size);">Developer Support Triage</h3><p style="font-size: var(--small-size);"><strong>Anthropic API</strong> to auto-classify community messages (bug/feature-request/how-to/feedback). At Nexla, I'd use this on Community Slack to route questions to the right engineer and track themes for the Voice of Developer report.</p></div>
+            </div>
+            <div class="card reveal" style="display: grid; grid-template-columns: auto 1fr; gap: 1em; align-items: center; transition-delay: 0.31s;">
+                <span style="font-size: 1.5em;">&#9889;</span>
+                <div><h3 style="font-size: var(--body-size);">Workflow Automation + Express.Dev</h3><p style="font-size: var(--small-size);"><strong>PostHog → OpenClaw → Slack</strong> — production automation I run today. Also tested Express.Dev hands-on: built an S3 → PostgreSQL pipeline (auto-schema detection, UPSERT mode) and a REST API → Snowflake pipeline (nested JSON flattening, null filtering) — both via NOVA prompts.</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 11: AI Workflows for Nexla (CLICKABLE)
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-11">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">5</span> AI Workflows</div>
+        <h2 class="reveal">AI Workflows I'd Bring to Nexla <span style="font-size: var(--small-size); color: var(--text-muted); font-weight: 400;">(click any to view pipeline)</span></h2>
+        <div style="display: flex; flex-direction: column; gap: clamp(0.3rem, 0.6vw, 0.5rem);">
+            <div class="wf-row-clickable reveal" style="transition-delay: 0.08s; border-left-color: var(--accent);" onclick="openPipeline('analytics')"><span class="wf-name">Analytics &rarr; Insights &rarr; Slack</span><span class="wf-desc">PostHog events &rarr; OpenClaw analysis &rarr; Slack digest</span><span class="wf-tools" style="transition: opacity 0.2s;">PostHog + OpenClaw + Slack</span></div>
+            <div class="wf-row-clickable reveal" style="transition-delay: 0.14s; border-left-color: #453AC7;" onclick="openPipeline('content')"><span class="wf-name">Content Pipeline Bot</span><span class="wf-desc">Changelog &rarr; AI draft blog post &rarr; human review &rarr; auto-publish</span><span class="wf-tools" style="transition: opacity 0.2s;">Claude API + GitHub Actions</span></div>
+            <div class="wf-row-clickable reveal" style="transition-delay: 0.20s; border-left-color: #21AE84;" onclick="openPipeline('triage')"><span class="wf-name">Community Triage</span><span class="wf-desc">Auto-categorize Discord/forum posts by topic + urgency &rarr; route to team</span><span class="wf-tools" style="transition: opacity 0.2s;">Claude + Discord Bot</span></div>
+            <div class="wf-row-clickable reveal" style="transition-delay: 0.26s; border-left-color: var(--text-muted);" onclick="openPipeline('followup')"><span class="wf-name">Event Follow-Up Engine</span><span class="wf-desc">Post-event: auto-generate personalized follow-ups from attendee notes</span><span class="wf-tools" style="transition: opacity 0.2s;">Claude + CRM</span></div>
+            <div class="wf-row-clickable reveal" style="transition-delay: 0.32s; border-left-color: var(--bg-card);" onclick="openPipeline('signals')"><span class="wf-name">Dev Signal Tracker</span><span class="wf-desc">Aggregate support + community threads &rarr; weekly AI-summarized insight digest</span><span class="wf-tools" style="transition: opacity 0.2s;">Python + Claude + Slack</span></div>
+        </div>
+        <div class="card reveal" style="background: var(--accent-glow); border: 1px solid rgba(97,84,255,0.2); margin-top: var(--content-gap); transition-delay: 0.38s;">
+            <p style="font-size: var(--small-size); color: var(--accent); font-weight: 600;">These are real automations I've built and would bring to Nexla on Day 1. Click any workflow to see the full pipeline architecture. (5B: Walk-through of AI-first workflows for the team)</p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     PIPELINE MODAL OVERLAY
+     ==================================================== -->
+<div class="pipeline-overlay" id="pipelineOverlay">
+    <div class="pipeline-modal">
+        <div class="pipeline-modal-header">
+            <h3 id="pipelineTitle">Pipeline</h3>
+            <button class="pipeline-modal-close" onclick="closePipeline()" aria-label="Close">&times;</button>
+        </div>
+        <div class="pipeline-modal-body">
+            <div class="pipeline-svg-container" id="pipelineSvg"></div>
+            <div class="pipeline-desc" id="pipelineDesc"></div>
+            <div class="pipeline-tech-stack" id="pipelineTech"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ====================================================
+     SLIDE 12: 90-Day Plan
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-12">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">6</span> 90-Day Plan</div>
+        <h2 class="reveal">Learn &rarr; Build &rarr; Scale (Realistic for a Mid-Level Hire)</h2>
+        <div class="grid-3 reveal-scale" style="transition-delay: 0.1s;">
+            <div class="phase-card">
+                <div class="phase-header"><h3>Days 1-30</h3><div class="sub">Learn & Listen</div></div>
+                <div class="phase-body">
+                    <div><span class="phase-label">Priority 1</span><p class="phase-text">Product immersion: can cold-demo Express.Dev, explain Nexsets + MCP, and navigate docs.nexla.com + developers.nexla.com confidently.</p></div>
+                    <div><span class="phase-label">Qualitative</span><p class="phase-text">1:1 with every engineer and PM. Know top 10 developer pain points from support tickets + Community Slack. Built trust internally — eng sees DevRel as a partner, not a marketer.</p></div>
+                    <div><span class="phase-label">Quantitative</span><p class="phase-text">3 published pieces (2 Express.Dev quick-starts + 1 "What's New"). Community Slack restructured with new channels. First feedback digest delivered to PM.</p></div>
+                </div>
+            </div>
+            <div class="phase-card">
+                <div class="phase-header" style="background: #453AC7;"><h3>Days 31-60</h3><div class="sub">Build & Ship</div></div>
+                <div class="phase-body">
+                    <div><span class="phase-label">Priority 2</span><p class="phase-text">Content engine running: repeatable draft → eng review → publish cycle. First Express.Dev hackathon planned or executed. Community landing page live.</p></div>
+                    <div><span class="phase-label">Qualitative</span><p class="phase-text">Eng team contributes to content (co-authored blog or reviewed tutorial). First Voice of Developer report delivered. First external event attended.</p></div>
+                    <div><span class="phase-label">Quantitative</span><p class="phase-text">8-10 total content pieces. Community Slack active (20+ messages/week, not just announcements). 1 video with 1K+ views. YouTube channel live.</p></div>
+                </div>
+            </div>
+            <div class="phase-card">
+                <div class="phase-header" style="background: var(--bg-secondary);"><h3>Days 61-90</h3><div class="sub">Scale & Measure</div></div>
+                <div class="phase-body">
+                    <div><span class="phase-label">Priority 3</span><p class="phase-text">Attribution model live: UTM tracking on all content → Express.Dev signups. DevRel dashboard shared with leadership. First hackathon run (virtual, 30+ participants).</p></div>
+                    <div><span class="phase-label">Qualitative</span><p class="phase-text">Leadership can answer "what does DevRel do?" with metrics. Two engineers coached into blog authors. Clear roadmap input from community signals.</p></div>
+                    <div><span class="phase-label">Quantitative</span><p class="phase-text">15+ content pieces. Measurable Express.Dev signup uplift from content (target: 15% of tutorial readers try Express.Dev). 2+ events attended/hosted.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 13: Defer + Improve
+     ==================================================== -->
+<section class="slide bg-grid" id="slide-13">
+    <div class="slide-content">
+        <div class="section-tag reveal"><span class="num">6</span> Priorities</div>
+        <h2 class="reveal">What I'd Defer & What I'd Change (6A + 6C)</h2>
+        <div class="grid-2 reveal-scale" style="transition-delay: 0.1s; margin-bottom: var(--content-gap);">
+            <div class="card" style="border-left: 3px solid var(--text-muted);">
+                <h3 style="margin-bottom: 0.5em;">What I'd Defer (and Why)</h3>
+                <ul class="bullet-list">
+                    <li><strong>Large conference sponsorships</strong> — Nexla should speak at Data Council, AI Engineer Summit first. Prove thought leadership before paying for booth space. ($5-20K saved.)</li>
+                    <li><strong>Certification program</strong> — need 20+ tutorials and an active community first. Certifications on a thin content library feel hollow.</li>
+                    <li><strong>Partner co-marketing with Vespa.ai/Microsoft</strong> — the partnerships exist but DevRel foundation needs to land first. Revisit at Day 90.</li>
+                    <li><strong>Ambassador program</strong> — you can't formalize community leaders until the community exists organically.</li>
+                </ul>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--warm);">
+                <h3 style="margin-bottom: 0.5em;">One Thing I'd Change Today (6C)</h3>
+                <p style="margin-bottom: 0.5em;">Nexla's content is <strong style="color: var(--text-primary);">product-centric but not developer-journey-centric</strong>. The blog covers topics like "Context Engineering for Enterprise AI" and "Reasoning vs. Judgment" — strong thought leadership, but there's no clear path from "I just signed up for Express.Dev" → "I built my first production pipeline".</p>
+                <p style="margin-bottom: 0.5em;">Specifically: <strong style="color: var(--accent);">Express.Dev's community page redirects to the homepage.</strong> developers.nexla.com has API docs but no quickstart journey. The ExpressYourself Challenge exists but has no showcase page for submissions.</p>
+                <p>I'd restructure around <strong style="color: var(--accent);">use case pathways</strong>: "I'm building a RAG pipeline" → "I need to sync Salesforce to Snowflake" → "I want to expose data products to my AI agents via MCP".</p>
+            </div>
+        </div>
+        <div class="card reveal" style="background: var(--warm-dim); border: 1px solid rgba(255,108,71,0.15); transition-delay: 0.25s;">
+            <h3 style="color: var(--warm); margin-bottom: 0.3em; font-size: var(--body-size);">What I Need from the Team (Being Realistic)</h3>
+            <p style="font-size: var(--small-size);">30 min/week with 2 senior engineers for content accuracy review &middot; Access to Express.Dev usage analytics (which prompts succeed/fail, drop-off points) &middot; Budget clarity for 2-3 events in Q1 &middot; PM partnership for roadmap alignment and "Voice of Developer" report review</p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 14: Open Questions
+     ==================================================== -->
+<section class="slide bg-mesh" id="slide-14">
+    <div class="accent-line-left"></div>
+    <div class="slide-content" style="gap: var(--content-gap);">
+        <h2 class="reveal" style="font-size: var(--h2-size);">Questions I'd Love to Explore Together</h2>
+        <div style="display: flex; flex-direction: column; gap: clamp(0.4rem, 1vw, 0.75rem);">
+            <div class="reveal" style="display: flex; align-items: flex-start; gap: 0.75em; transition-delay: 0.08s;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--accent); color: var(--bg-primary); font-weight: 700; font-size: var(--small-size);">1</span>
+                <p style="color: var(--text-primary); font-size: var(--body-size);">What does the Express.Dev → Nexla Platform upgrade funnel look like today? Where's the biggest drop-off between free-tier signup and first paid conversion?</p>
+            </div>
+            <div class="reveal" style="display: flex; align-items: flex-start; gap: 0.75em; transition-delay: 0.14s;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--accent); color: var(--bg-primary); font-weight: 700; font-size: var(--small-size);">2</span>
+                <p style="color: var(--text-primary); font-size: var(--body-size);">Is Express.Dev intended as a gateway to the core Nexla platform, or a standalone product for a different persona? This changes the content strategy fundamentally.</p>
+            </div>
+            <div class="reveal" style="display: flex; align-items: flex-start; gap: 0.75em; transition-delay: 0.20s;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--accent); color: var(--bg-primary); font-weight: 700; font-size: var(--small-size);">3</span>
+                <p style="color: var(--text-primary); font-size: var(--body-size);">How do Nexla engineers feel about being involved in DevRel content? Are there people who already want to write or speak? (I'd love to enable them, not replace them.)</p>
+            </div>
+            <div class="reveal" style="display: flex; align-items: flex-start; gap: 0.75em; transition-delay: 0.26s;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--accent); color: var(--bg-primary); font-weight: 700; font-size: var(--small-size);">4</span>
+                <p style="color: var(--text-primary); font-size: var(--body-size);">The Vespa.ai and Microsoft partnerships are exciting — what's the appetite for joint developer content (co-authored tutorials, integration webinars)?</p>
+            </div>
+            <div class="reveal" style="display: flex; align-items: flex-start; gap: 0.75em; transition-delay: 0.32s;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--accent); color: var(--bg-primary); font-weight: 700; font-size: var(--small-size);">5</span>
+                <p style="color: var(--text-primary); font-size: var(--body-size);">What would make you say "we made the right hire" at 6 months? I want to align my execution plan to the metrics that matter to you, not just industry defaults.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================
+     SLIDE 15: Thank You
+     ==================================================== -->
+<section class="slide bg-mesh" id="slide-15">
+    <div class="accent-line-left"></div>
+    <div class="slide-content" style="gap: var(--content-gap);">
+        <h1 class="reveal">Thank You</h1>
+        <p class="quote reveal">Let's build something developers actually love.</p>
+        <div class="reveal" style="width: 3em; height: 3px; background: var(--accent); margin: 0.5em 0;"></div>
+        <div class="reveal">
+            <p style="font-size: var(--h3-size); font-weight: 700; color: var(--text-primary);">Debabrata Panigrahi</p>
+            <p style="color: var(--text-muted); font-size: var(--body-size);">d.panigrahi.nitrkl@gmail.com</p>
+            <p style="color: var(--text-muted); font-size: var(--small-size);">github.com/Debanitrkl &middot; linkedin.com/in/debanitr</p>
+        </div>
+    </div>
+</section>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Navigation, animations, progress tracking
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.totalSlides = this.slides.length;
+        this.currentSlide = 0;
+        this.progressBar = document.getElementById('progressBar');
+        this.navDots = document.getElementById('navDots');
+        this.slideCounter = document.getElementById('slideCounter');
+        this.isAnimating = false;
+
+        this.createNavDots();
+        this.initObserver();
+        this.bindKeyboard();
+        this.updateUI();
+    }
+
+    createNavDots() {
+        this.slides.forEach((_, i) => {
+            const dot = document.createElement('button');
+            dot.className = 'nav-dot';
+            dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+            dot.addEventListener('click', () => {
+                this.slides[i].scrollIntoView({ behavior: 'smooth' });
+            });
+            this.navDots.appendChild(dot);
+        });
+    }
+
+    initObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    const index = Array.from(this.slides).indexOf(entry.target);
+                    this.currentSlide = index;
+                    this.updateUI();
+                }
+            });
+        }, { threshold: 0.4 });
+
+        this.slides.forEach(slide => observer.observe(slide));
+    }
+
+    bindKeyboard() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                this.goToSlide(this.currentSlide + 1);
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                this.goToSlide(this.currentSlide - 1);
+            }
+        });
+    }
+
+    goToSlide(index) {
+        if (index < 0 || index >= this.totalSlides) return;
+        this.slides[index].scrollIntoView({ behavior: 'smooth' });
+    }
+
+    updateUI() {
+        // Progress bar
+        const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+        this.progressBar.style.width = progress + '%';
+
+        // Nav dots
+        this.navDots.querySelectorAll('.nav-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === this.currentSlide);
+        });
+
+        // Counter
+        this.slideCounter.textContent = `${this.currentSlide + 1} / ${this.totalSlides}`;
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    new SlidePresentation();
+});
+
+/* ===========================================
+   PIPELINE MODAL SYSTEM
+   Clickable workflow cards that show SVG pipeline diagrams
+   with proper tool logos and pipeline aesthetics
+   =========================================== */
+
+const PIPELINES = {
+    analytics: {
+        title: 'Analytics → Insights → Slack Pipeline',
+        desc: `<strong>This is a production automation I run today.</strong> PostHog captures product analytics events (page views, feature usage, funnel drop-offs). OpenClaw aggregates, normalizes the signals, analyzes patterns, identifies anomalies, and generates a human-readable weekly insight digest. The final summary is posted to a Slack channel every Monday morning — no manual work required.<br><br>At Nexla, I'd adapt this to track Express.Dev usage patterns, identify where developers get stuck, and surface actionable insights to the product team automatically.`,
+        tech: ['PostHog', 'OpenClaw', 'Slack', 'Python', 'Cron'],
+        nodes: [
+            { id: 'posthog', label: 'PostHog', sub: 'Analytics Events', color: '#F9A825', logo: 'posthog' },
+            { id: 'openclaw', label: 'OpenClaw', sub: 'Aggregate + Analyze', color: '#7C4DFF', logo: 'openclaw' },
+            { id: 'slack', label: 'Slack', sub: 'Weekly Digest', color: '#4A154B', logo: 'slack' },
+        ]
+    },
+    content: {
+        title: 'Content Pipeline Bot',
+        desc: `<strong>Automated content generation from product changelogs.</strong> When engineering ships a release, the GitHub Action triggers. It pulls the changelog, sends it to the Claude API for drafting a developer-friendly blog post, then creates a PR in the CMS repo. A human reviews and approves. On merge, it auto-publishes to the blog and cross-posts to social channels.<br><br>This cuts content turnaround from 1 week to 1 day for release announcements.`,
+        tech: ['GitHub Actions', 'Anthropic API', 'CMS', 'Twitter API', 'Dev.to API'],
+        nodes: [
+            { id: 'github', label: 'GitHub', sub: 'Changelog / Release', color: '#24292E', logo: 'github' },
+            { id: 'claude', label: 'Claude API', sub: 'Draft Generation', color: '#D97706', logo: 'anthropic' },
+            { id: 'review', label: 'Human Review', sub: 'Edit & Approve PR', color: '#6154FF', logo: 'review' },
+            { id: 'publish', label: 'Multi-Channel', sub: 'Blog + Social + Dev.to', color: '#1DA1F2', logo: 'publish' },
+        ]
+    },
+    triage: {
+        title: 'Community Triage Bot',
+        desc: `<strong>Automatic categorization and routing of community messages.</strong> A Discord bot listens for new messages in support channels. Each message is sent to Claude for classification (bug report, feature request, how-to question, general feedback). Based on the category and urgency, it routes to the right Notion board and tags the appropriate team member.<br><br>This ensures no community question goes unanswered for more than 4 hours.`,
+        tech: ['Discord Bot', 'Anthropic API', 'Notion API', 'Webhooks'],
+        nodes: [
+            { id: 'discord', label: 'Discord', sub: 'Community Messages', color: '#5865F2', logo: 'discord' },
+            { id: 'claude', label: 'Claude API', sub: 'Classify & Prioritize', color: '#D97706', logo: 'anthropic' },
+            { id: 'notion', label: 'Notion', sub: 'Triage Board', color: '#000000', logo: 'notion' },
+            { id: 'team', label: 'Team Alert', sub: 'Slack Notification', color: '#4A154B', logo: 'slack' },
+        ]
+    },
+    followup: {
+        title: 'Event Follow-Up Engine',
+        desc: `<strong>Personalized post-event outreach at scale.</strong> After a hackathon or meetup, attendee data (name, company, what they built/asked about) feeds into a pipeline. Claude generates personalized follow-up emails referencing their specific interests. The emails go through a human approval queue before sending via the CRM.<br><br>This turns 4 hours of manual follow-up into a 15-minute review process.`,
+        tech: ['Event Platform', 'Anthropic API', 'HubSpot CRM', 'Email'],
+        nodes: [
+            { id: 'event', label: 'Event Data', sub: 'Attendees + Notes', color: '#E91E63', logo: 'event' },
+            { id: 'claude', label: 'Claude API', sub: 'Personalize Emails', color: '#D97706', logo: 'anthropic' },
+            { id: 'approve', label: 'Approval Queue', sub: 'Human Review', color: '#6154FF', logo: 'review' },
+            { id: 'crm', label: 'CRM Send', sub: 'HubSpot + Tracking', color: '#FF7A59', logo: 'hubspot' },
+        ]
+    },
+    signals: {
+        title: 'Developer Signal Tracker',
+        desc: `<strong>Weekly aggregated intelligence from all developer touchpoints.</strong> Python scripts pull data from support tickets, community threads, doc analytics, and Express.Dev conversation logs. Claude synthesizes the raw signals into a structured "Voice of Developer" report with ranked pain points, emerging themes, and suggested actions. The report posts to a PM Slack channel every Friday.<br><br>This replaces ad-hoc "what are developers saying?" conversations with data-driven insights.`,
+        tech: ['Python', 'Zendesk API', 'Discord API', 'Anthropic API', 'Slack'],
+        nodes: [
+            { id: 'sources', label: 'Data Sources', sub: 'Tickets + Community + Docs', color: '#2196F3', logo: 'data' },
+            { id: 'python', label: 'Python ETL', sub: 'Aggregate & Clean', color: '#3776AB', logo: 'python' },
+            { id: 'claude', label: 'Claude API', sub: 'Synthesize Report', color: '#D97706', logo: 'anthropic' },
+            { id: 'slack', label: 'Slack', sub: 'Friday PM Digest', color: '#4A154B', logo: 'slack' },
+        ]
+    }
+};
+
+/* SVG Logo paths (simplified iconic representations) */
+function getLogoSvg(type, color) {
+    const c = color || '#fff';
+    switch(type) {
+        case 'posthog':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><text x="20" y="25" text-anchor="middle" fill="${c}" font-size="14" font-weight="700" font-family="Rubik,sans-serif">PH</text>`;
+        case 'openclaw':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><text x="20" y="25" text-anchor="middle" fill="${c}" font-size="12" font-weight="700" font-family="Rubik,sans-serif">OC</text>`;
+        case 'anthropic':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><path d="M14 27 L20 13 L26 27 M16 23 H24" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+        case 'slack':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><rect x="14" y="17" width="4" height="8" rx="2" fill="${c}"/><rect x="22" y="15" width="4" height="8" rx="2" fill="${c}"/><rect x="17" y="14" width="8" height="4" rx="2" fill="${c}"/><rect x="15" y="22" width="8" height="4" rx="2" fill="${c}"/>`;
+        case 'github':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><circle cx="20" cy="18" r="6" stroke="${c}" stroke-width="1.5" fill="none"/><path d="M14 28 Q14 22 20 22 Q26 22 26 28" stroke="${c}" stroke-width="1.5" fill="none"/>`;
+        case 'discord':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><text x="20" y="25" text-anchor="middle" fill="${c}" font-size="11" font-weight="700" font-family="Rubik,sans-serif">DC</text>`;
+        case 'notion':
+            return `<circle cx="20" cy="20" r="14" fill="#fff" opacity="0.15"/><text x="20" y="25" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="serif">N</text>`;
+        case 'review':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><path d="M14 20 L18 24 L26 16" stroke="${c}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+        case 'publish':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><path d="M15 20 L20 15 L25 20 M20 15 V27" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+        case 'event':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><rect x="14" y="14" width="12" height="12" rx="2" stroke="${c}" stroke-width="1.5" fill="none"/><line x1="14" y1="18" x2="26" y2="18" stroke="${c}" stroke-width="1.5"/>`;
+        case 'hubspot':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><text x="20" y="25" text-anchor="middle" fill="${c}" font-size="11" font-weight="700" font-family="Rubik,sans-serif">HS</text>`;
+        case 'data':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><ellipse cx="20" cy="15" rx="7" ry="3" stroke="${c}" stroke-width="1.5" fill="none"/><path d="M13 15 V25 Q13 28 20 28 Q27 28 27 25 V15" stroke="${c}" stroke-width="1.5" fill="none"/><ellipse cx="20" cy="20" rx="7" ry="3" stroke="${c}" stroke-width="1" fill="none" opacity="0.4"/>`;
+        case 'python':
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><text x="20" y="25" text-anchor="middle" fill="${c}" font-size="14" font-weight="700" font-family="monospace">Py</text>`;
+        default:
+            return `<circle cx="20" cy="20" r="14" fill="${c}" opacity="0.15"/><circle cx="20" cy="20" r="4" fill="${c}"/>`;
+    }
+}
+
+function buildPipelineSvg(nodes) {
+    const nodeW = 150, nodeH = 90, gap = 40, padX = 30, padY = 20;
+    const totalW = nodes.length * nodeW + (nodes.length - 1) * gap + padX * 2;
+    const totalH = nodeH + padY * 2 + 30;
+
+    let svg = `<svg viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Rubik', sans-serif;">`;
+
+    // Defs for glow filter
+    svg += `<defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6154FF" opacity="0.7"/></marker>
+    </defs>`;
+
+    // Draw connecting arrows
+    for (let i = 0; i < nodes.length - 1; i++) {
+        const x1 = padX + i * (nodeW + gap) + nodeW;
+        const x2 = padX + (i + 1) * (nodeW + gap);
+        const y = padY + nodeH / 2;
+        // Animated dashed line
+        svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#6154FF" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowhead)" opacity="0.6">
+            <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" repeatCount="indefinite"/>
+        </line>`;
+        // Pulse dot
+        svg += `<circle r="3" fill="#6154FF" opacity="0.8">
+            <animateMotion dur="2s" repeatCount="indefinite" path="M${x1},${y} L${x2},${y}"/>
+        </circle>`;
+    }
+
+    // Draw nodes
+    nodes.forEach((node, i) => {
+        const x = padX + i * (nodeW + gap);
+        const y = padY;
+        const cx = x + nodeW / 2;
+
+        // Card background
+        svg += `<rect x="${x}" y="${y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#2A2A3C" stroke="${node.color}" stroke-width="1.5" filter="url(#glow)"/>`;
+        // Top accent line
+        svg += `<rect x="${x}" y="${y}" width="${nodeW}" height="3" rx="1.5" fill="${node.color}"/>`;
+        // Logo
+        svg += `<g transform="translate(${cx - 20}, ${y + 8})">${getLogoSvg(node.logo, node.color)}</g>`;
+        // Label
+        svg += `<text x="${cx}" y="${y + 58}" text-anchor="middle" fill="#F1F2F3" font-size="12" font-weight="700">${node.label}</text>`;
+        // Sub label
+        svg += `<text x="${cx}" y="${y + 72}" text-anchor="middle" fill="#D3D1EB" font-size="9">${node.sub}</text>`;
+    });
+
+    svg += '</svg>';
+    return svg;
+}
+
+function openPipeline(id) {
+    const pipeline = PIPELINES[id];
+    if (!pipeline) return;
+
+    document.getElementById('pipelineTitle').textContent = pipeline.title;
+    document.getElementById('pipelineSvg').innerHTML = buildPipelineSvg(pipeline.nodes);
+    document.getElementById('pipelineDesc').innerHTML = pipeline.desc;
+
+    const techContainer = document.getElementById('pipelineTech');
+    techContainer.innerHTML = pipeline.tech.map(t => `<span class="pipeline-tech-tag">${t}</span>`).join('');
+
+    document.getElementById('pipelineOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePipeline() {
+    document.getElementById('pipelineOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Close on overlay click or Escape
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('pipeline-overlay')) closePipeline();
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePipeline();
+});
+</script>
+
+</body>
+</html>
